@@ -1,9 +1,17 @@
 package com.time2go.goosedetector;
 
+import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -17,7 +25,12 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 
-public class MainActivity extends Activity implements org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2 {
+// The app at the URL was used as a guide from a code project entry
+//https://code.google.com/p/make-money-apps/
+//http://www.codeproject.com/Articles/791145/Motion-Detection-in-Android-Howto
+//I combined info from the Howto with information from the color-blob-dectect opencv sample.
+
+public class MainActivity extends ActionBarActivity implements org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2 {
 
     private static final String TAG = "OCVSample::Activity";
     private Mat cameraRgbaFrame;
@@ -27,13 +40,45 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i("OCVSample::Activity", "called onCreate");
+        //requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.activity_main);
+
+        //getActionBar().setBackgroundDrawable(new ColorDrawable(Color.argb(128, 0, 0, 0)));
+        //getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#330000ff")) );
+        //getSupportActionBar().setStackedBackgroundDrawable(new ColorDrawable(Color.parseColor("#550000ff")));
+
         mOpenCvCameraView = (CameraBridgeViewBase)findViewById(R.id.goose_detect_view);
         mOpenCvCameraView.setCvCameraViewListener(this);
         motionDetector = new BasicDetector(60);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch(item.getItemId())
+        {
+            case R.id.preferences:
+                Intent intent = new Intent();
+                intent.setClassName(this, "com.time2go.goosedetector.preferenceActivity");
+                startActivity(intent);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {

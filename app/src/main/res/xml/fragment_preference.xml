@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="FOO">
+
+        <CheckBoxPreference
+            android:key="checkBoxPref"
+            android:title="check it out"
+            android:summary="click this litle box"/>
+
+        <EditTextPreference
+            android:key="gooseGunIPaddress"
+            android:title="Goose Gun IP Address"
+            android:summary="Goose Gun IP Address summary"
+            android:dialogTitle="Goose Gun IP Address dialog Title" />
+
+    </PreferenceCategory>
+</PreferenceScreen>

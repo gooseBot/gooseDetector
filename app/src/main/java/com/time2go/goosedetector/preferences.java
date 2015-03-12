@@ -3,7 +3,7 @@ package com.time2go.goosedetector;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 
-public class preferences extends PreferenceFragment
+public class Preferences extends PreferenceFragment
 {
     @Override
     public void onCreate(Bundle savedInstanceState)

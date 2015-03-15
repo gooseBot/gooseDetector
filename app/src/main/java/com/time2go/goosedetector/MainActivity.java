@@ -2,14 +2,21 @@ package com.time2go.goosedetector;
 
 import android.app.Activity;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.BaseLoaderCallback;
@@ -26,7 +33,7 @@ import org.opencv.core.Scalar;
 //http://www.codeproject.com/Articles/791145/Motion-Detection-in-Android-Howto
 //I combined info from the Howto with information from the color-blob-dectect opencv sample.
 
-public class MainActivity extends Activity implements org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2 {
+public class MainActivity extends Activity implements org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2, SensorEventListener {
 
     private static final String TAG = "OCVSample::Activity";
     private Mat cameraRgbaFrame;
@@ -47,6 +54,13 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
     private int mCameraMaxHeight;
     private boolean mDectectEnabled;
     private static long mLastTriggerTime;
+
+    private SensorManager mSensorManager;
+    private Sensor mLight;
+    private float mlux;
+    private float mluxThreashold;
+
+    private Handler mHandler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +101,28 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
             }
         };
         mDrawerLayout.setDrawerListener(mDrawerToggle);
+
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mLight = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+    }
+
+    @Override
+    public final void onAccuracyChanged(Sensor sensor, int accuracy) {
+        // Do something here if sensor accuracy changes.
+    }
+
+    @Override
+    public final void onSensorChanged(SensorEvent event) {
+        // The light sensor returns a single value.
+        // Many sensors return 3 values, one for each axis.
+        mlux = event.values[0];
+        Log.i(TAG, "Light sensor value: " + String.valueOf(mlux));
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+            ((TextView)findViewById(R.id.lux)).setText("Lux "+String.valueOf(mlux));
+            }
+        });
     }
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
@@ -113,11 +149,14 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
         Mat mat = cameraRgbaFrame.submat(rect);
         motionDetector.detect(mat).copyTo(cameraRgbaFrame.submat(rect));
 
-        Core.putText(cameraRgbaFrame,
-                String.valueOf(motionDetector.getContourCount()),
-                new Point(20D, 20D), 0, 1.0D,
-                new Scalar(255D, 255D, 255D, 255D));
-        if (motionDetector.getContourCount()>mCountourThreshold && mDectectEnabled) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+            ((TextView)findViewById(R.id.message)).setText("Count "+String.valueOf(motionDetector.getContourCount()));
+            }
+        });
+
+        if (motionDetector.getContourCount()>mCountourThreshold && mDectectEnabled && mlux > mluxThreashold) {
             if ((System.currentTimeMillis()-mLastTriggerTime) > 1000*10) {
                 Log.i(TAG, "Message send to goose gun: " + String.valueOf(motionDetector.getContourCount()));
                 UDPcommunication UDPcommunicationTask = new UDPcommunication();
@@ -155,6 +194,7 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
     public void onPause()
     {
         super.onPause();
+        mSensorManager.unregisterListener(this);
         if (mOpenCvCameraView != null)
         {
             mOpenCvCameraView.disableView();
@@ -165,6 +205,7 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
     {
         super.onResume();
         OpenCVLoader.initAsync("2.4.3", this, mLoaderCallback);
+        mSensorManager.registerListener(this, mLight, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     private class PreferenceChangeListener implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -197,6 +238,9 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
 
         mCountourThreshold = Integer.parseInt(mSharedPrefs.getString("contoursThreshold", "10"));
         mPreferences.findPreference("contoursThreshold").setSummary(String.valueOf(mCountourThreshold));
+
+        mluxThreashold = Integer.parseInt(mSharedPrefs.getString("luxThreshold", "5"));
+        mPreferences.findPreference("luxThreshold").setSummary(String.valueOf(mluxThreashold));
 
         mDectectEnabled = mSharedPrefs.getBoolean("dectectEnabled", false);
     }

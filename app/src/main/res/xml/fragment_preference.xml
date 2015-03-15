@@ -32,6 +32,14 @@
             android:summary="Used to avoid false triggers"
             android:dialogTitle="Contours Threshold" />
 
+        <EditTextPreference
+            android:key="luxThreshold"
+            android:inputType="number"
+            android:defaultValue="5"
+            android:title="Lux Threshold"
+            android:summary="Don't trigger when dark"
+            android:dialogTitle="Lux Threshold" />
+
         <PreferenceScreen
             android:key="roiRectangle"
             android:title="ROI Rectangle"

@@ -1,18 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory android:title="FOO">
+    <PreferenceCategory android:title="Goose Detector Settings">
 
         <CheckBoxPreference
-            android:key="checkBoxPref"
-            android:title="check it out"
-            android:summary="click this litle box"/>
+            android:title="Enable triggering"
+            android:summary="For setting up ROI values"
+            android:key="dectectEnabled"
+            android:defaultValue="false"/>
+
+        <!--<EditTextPreference-->
+            <!--android:key="gooseGunIPaddress"-->
+            <!--android:title="Goose Gun IP Address"-->
+            <!--android:defaultValue="192.168.1.178"-->
+            <!--android:summary="xxx.xxx.xxx.xxx"-->
+            <!--android:dialogTitle="Goose Gun IP Address" />-->
+
+        <!--<EditTextPreference-->
+            <!--android:key="gooseGunUDPport"-->
+            <!--android:title="Goose Gun UDP Port"-->
+            <!--android:inputType="number"-->
+            <!--android:defaultValue="8888"-->
+            <!--android:summary="xxxx"-->
+            <!--android:dialogTitle="Goose Gun UDP Port" />-->
 
         <EditTextPreference
-            android:key="gooseGunIPaddress"
-            android:title="Goose Gun IP Address"
-            android:summary="Goose Gun IP Address summary"
-            android:dialogTitle="Goose Gun IP Address dialog Title" />
+            android:key="contoursThreshold"
+            android:inputType="number"
+            android:defaultValue="10"
+            android:title="Contours Threshold"
+            android:summary="Used to avoid false triggers"
+            android:dialogTitle="Contours Threshold" />
+
+        <PreferenceScreen
+            android:key="roiRectangle"
+            android:title="ROI Rectangle"
+            android:summary="Specify a rectangle to focus on">
+            <EditTextPreference
+                android:key="ROIleft"
+                android:inputType="number"
+                android:defaultValue="100"
+                android:summary="Minimum = 0"
+                android:title="Left"
+                android:dialogTitle="Left column" />
+            <EditTextPreference
+                android:key="ROItop"
+                android:inputType="number"
+                android:summary="Minimum = 0"
+                android:defaultValue="100"
+                android:title="Top"
+                android:dialogTitle="Top row" />
+            <EditTextPreference
+                android:key="ROIwidth"
+                android:inputType="number"
+                android:defaultValue="400"
+                android:title="Width"
+                android:summary="0"
+                android:dialogTitle="ROI Width" />
+            <EditTextPreference
+                android:key="ROIheight"
+                android:inputType="number"
+                android:defaultValue="200"
+                android:summary="0"
+                android:title="Height"
+                android:dialogTitle="ROI Height" />
+        </PreferenceScreen>
 
     </PreferenceCategory>
 </PreferenceScreen>

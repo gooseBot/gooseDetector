@@ -58,7 +58,7 @@ public final class BasicDetector extends BaseDetector
         Imgproc.threshold(mat1, mat1, threshold, 255D, 0);
         ArrayList arraylist = new ArrayList();
         Imgproc.findContours(mat1, arraylist, new Mat(), 1, 2);
-        Log.e(":BasicDetector", (new StringBuilder()).append("Contours count: ").append(arraylist.size()).toString());
+        ///Log.e(":BasicDetector", (new StringBuilder()).append("Contours count: ").append(arraylist.size()).toString());
         numContours = arraylist.size();
         Imgproc.drawContours(mat, arraylist, -1, contourColor, contourThickness);
         if (arraylist.size() > 0)

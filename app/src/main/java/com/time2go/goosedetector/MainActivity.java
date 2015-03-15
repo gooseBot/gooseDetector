@@ -1,12 +1,15 @@
 package com.time2go.goosedetector;
 
 import android.app.Activity;
+import android.app.FragmentManager;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.BaseLoaderCallback;
@@ -30,7 +33,20 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
     private CameraBridgeViewBase mOpenCvCameraView;
     private IDetector motionDetector;
     private DrawerLayout mDrawerLayout;
-    ActionBarDrawerToggle mDrawerToggle;
+    private ActionBarDrawerToggle mDrawerToggle;
+
+    private Preferences mPreferences;
+    private SharedPreferences mSharedPrefs;
+    private PreferenceChangeListener mPreferenceListener = null;
+    private int mROIleft;
+    private int mROItop;
+    private int mROIwidth;
+    private int mROIheight;
+    private int mCountourThreshold;
+    private int mCameraMaxWidth;
+    private int mCameraMaxHeight;
+    private boolean mDectectEnabled;
+    private static long mLastTriggerTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +54,18 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        getFragmentManager().beginTransaction().replace(R.id.content_navigation,
-                new Preferences()).commit();
+        mOpenCvCameraView = (CameraBridgeViewBase)findViewById(R.id.goose_detect_view);
+        mOpenCvCameraView.setCvCameraViewListener(this);
+        motionDetector = new BasicDetector(60);
+
+        mPreferences = new Preferences();
+        FragmentManager mFragmentManager = getFragmentManager();
+        mFragmentManager.beginTransaction().replace(R.id.content_navigation, mPreferences).commit();
+        mFragmentManager.executePendingTransactions();
+
+        mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        mPreferenceListener = new PreferenceChangeListener();
+        mSharedPrefs.registerOnSharedPreferenceChangeListener(mPreferenceListener);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(
@@ -53,20 +79,14 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
             /** Called when a drawer has settled in a completely closed state. */
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
-                Toast.makeText(getApplicationContext(), "closed", Toast.LENGTH_SHORT).show();
             }
 
             /** Called when a drawer has settled in a completely open state. */
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-                Toast.makeText(getApplicationContext(), "open", Toast.LENGTH_SHORT).show();
             }
         };
         mDrawerLayout.setDrawerListener(mDrawerToggle);
-
-        mOpenCvCameraView = (CameraBridgeViewBase)findViewById(R.id.goose_detect_view);
-        mOpenCvCameraView.setCvCameraViewListener(this);
-        motionDetector = new BasicDetector(60);
     }
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
@@ -89,15 +109,34 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
     public Mat onCameraFrame(org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame cvcameraviewframe)
     {
         cameraRgbaFrame = cvcameraviewframe.rgba();
-        Rect rect = new Rect(0, 100, cameraRgbaFrame.width(), -100 + cameraRgbaFrame.height());
+        Rect rect = new Rect(mROIleft, mROItop, mROIwidth, mROIheight);
         Mat mat = cameraRgbaFrame.submat(rect);
         motionDetector.detect(mat).copyTo(cameraRgbaFrame.submat(rect));
-        Core.putText(cameraRgbaFrame, String.valueOf(motionDetector.getContourCount()), new Point(20D, 20D), 0, 1.0D, new Scalar(255D, 255D, 255D, 255D));
+
+        Core.putText(cameraRgbaFrame,
+                String.valueOf(motionDetector.getContourCount()),
+                new Point(20D, 20D), 0, 1.0D,
+                new Scalar(255D, 255D, 255D, 255D));
+        if (motionDetector.getContourCount()>mCountourThreshold && mDectectEnabled) {
+            if ((System.currentTimeMillis()-mLastTriggerTime) > 1000*10) {
+                Log.i(TAG, "Message send to goose gun: " + String.valueOf(motionDetector.getContourCount()));
+                UDPcommunication UDPcommunicationTask = new UDPcommunication();
+                UDPcommunicationTask.execute("gde", this);
+                mLastTriggerTime = System.currentTimeMillis();
+            }
+        }
         return cameraRgbaFrame;
     }
 
     public void onCameraViewStarted(int i, int j)
     {
+        mCameraMaxWidth=i;
+        mCameraMaxHeight=j;
+        Preference pref = mPreferences.findPreference("ROIwidth");
+        pref.setSummary("Maximum = " + String.valueOf(mCameraMaxWidth));
+        pref = mPreferences.findPreference("ROIheight");
+        pref.setSummary("Maximum = " + String.valueOf(mCameraMaxHeight));
+        ApplySettings();
     }
 
     public void onCameraViewStopped()
@@ -128,5 +167,37 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
         OpenCVLoader.initAsync("2.4.3", this, mLoaderCallback);
     }
 
+    private class PreferenceChangeListener implements SharedPreferences.OnSharedPreferenceChangeListener {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+            ApplySettings();
+        }
+    }
 
+    public void ApplySettings() {
+        mROItop = Integer.parseInt(mSharedPrefs.getString("ROItop", "0"));
+        if (mROItop < 0) mROItop = 0;
+        if (mROItop > mCameraMaxHeight) mROItop=mCameraMaxHeight;
+        mPreferences.findPreference("ROItop").setSummary(String.valueOf(mROItop));
+
+        mROIleft = Integer.parseInt(mSharedPrefs.getString("ROIleft", "0"));
+        if (mROIleft < 0) mROIleft = 0;
+        if (mROIleft > mCameraMaxWidth) mROIleft=mCameraMaxWidth;
+        mPreferences.findPreference("ROIleft").setSummary(String.valueOf(mROIleft));
+
+        mROIheight = Integer.parseInt(mSharedPrefs.getString("ROIheight", String.valueOf(mCameraMaxHeight)));
+        if (mROIheight <= 0) mROIheight = 1;
+        if (mROIheight > mCameraMaxHeight-mROItop) mROIheight = mCameraMaxHeight-mROItop;
+        mPreferences.findPreference("ROIheight").setSummary(String.valueOf(mROIheight)+ "/" + String.valueOf(mCameraMaxHeight));
+
+        mROIwidth = Integer.parseInt(mSharedPrefs.getString("ROIwidth", String.valueOf(mCameraMaxWidth)));
+        if (mROIwidth <= 0) mROIwidth = 1;
+        if (mROIwidth > mCameraMaxWidth-mROIleft) mROIwidth=mCameraMaxWidth-mROIleft;
+        mPreferences.findPreference("ROIwidth").setSummary(String.valueOf(mROIwidth)+ "/" + String.valueOf(mCameraMaxWidth));
+
+        mCountourThreshold = Integer.parseInt(mSharedPrefs.getString("contoursThreshold", "10"));
+        mPreferences.findPreference("contoursThreshold").setSummary(String.valueOf(mCountourThreshold));
+
+        mDectectEnabled = mSharedPrefs.getBoolean("dectectEnabled", false);
+    }
 }

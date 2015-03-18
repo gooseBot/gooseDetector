@@ -59,8 +59,12 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
     private Sensor mLight;
     private float mlux;
     private float mluxThreashold;
+    private long mFrameCount;
 
     private Handler mHandler = new Handler();
+
+    //private MovingAverage mAverage = new MovingAverage(5);
+    private Histogram mHistogram = new Histogram(5,1,30,100);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +108,7 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mLight = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+
     }
 
     @Override
@@ -148,11 +153,17 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
         Rect rect = new Rect(mROIleft, mROItop, mROIwidth, mROIheight);
         Mat mat = cameraRgbaFrame.submat(rect);
         motionDetector.detect(mat).copyTo(cameraRgbaFrame.submat(rect));
+        final int contourCount = motionDetector.getContourCount();
+        //mAverage.newNum(contourCount);
+        mHistogram.fill((double)contourCount);
+        //mFrameCount++;
 
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-            ((TextView)findViewById(R.id.message)).setText("Count "+String.valueOf(motionDetector.getContourCount()));
+            ((TextView)findViewById(R.id.message)).setText("Count "+String.valueOf(contourCount));
+            ((TextView)findViewById(R.id.average)).setText("Average "+String.valueOf(mHistogram.getAvg()));
+            ((TextView)findViewById(R.id.histogramMean)).setText("Histogram "+String.valueOf(mHistogram.mean()));
             }
         });
 

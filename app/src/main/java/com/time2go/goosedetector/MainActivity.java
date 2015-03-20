@@ -9,35 +9,40 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
 import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
+import org.opencv.highgui.Highgui;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 // The app at the URL was used as a guide from a code project entry
 //https://code.google.com/p/make-money-apps/
 //http://www.codeproject.com/Articles/791145/Motion-Detection-in-Android-Howto
 //I combined info from the Howto with information from the color-blob-dectect opencv sample.
 
-public class MainActivity extends Activity implements org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2, SensorEventListener {
+public class MainActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener2, SensorEventListener {
 
     private static final String TAG = "OCVSample::Activity";
     private Mat cameraRgbaFrame;
-    private CameraBridgeViewBase mOpenCvCameraView;
+    private myJavaCameraView mOpenCvCameraView;
     private IDetector motionDetector;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -49,7 +54,8 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
     private int mROItop;
     private int mROIwidth;
     private int mROIheight;
-    private int mCountourThreshold;
+    private int mMinCountourThreshold;
+    private int mMaxCountourThreshold;
     private int mCameraMaxWidth;
     private int mCameraMaxHeight;
     private boolean mDectectEnabled;
@@ -59,21 +65,22 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
     private Sensor mLight;
     private float mlux;
     private float mluxThreashold;
-    private long mFrameCount;
 
     private Handler mHandler = new Handler();
 
-    //private MovingAverage mAverage = new MovingAverage(5);
     private Histogram mHistogram = new Histogram(5,1,30,100);
+
+    File mediaStorageDir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.i("OCVSample::Activity", "called onCreate");
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         setContentView(R.layout.activity_main);
 
-        mOpenCvCameraView = (CameraBridgeViewBase)findViewById(R.id.goose_detect_view);
-        mOpenCvCameraView.setCvCameraViewListener(this);
+        mOpenCvCameraView = (myJavaCameraView) findViewById(R.id.goose_detect_view);
+        mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         motionDetector = new BasicDetector(60);
 
         mPreferences = new Preferences();
@@ -109,6 +116,15 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mLight = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
 
+        mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "GooseCam");
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Log.e(TAG, "failed to create directory");
+            }
+        }
+
+        mOpenCvCameraView.setCvCameraViewListener(this);
+
     }
 
     @Override
@@ -121,7 +137,6 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
         // The light sensor returns a single value.
         // Many sensors return 3 values, one for each axis.
         mlux = event.values[0];
-        Log.i(TAG, "Light sensor value: " + String.valueOf(mlux));
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -136,7 +151,6 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS:
                 {
-                    Log.i(TAG, "OpenCV loaded successfully");
                     mOpenCvCameraView.enableView();
                 } break;
                 default:
@@ -154,9 +168,7 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
         Mat mat = cameraRgbaFrame.submat(rect);
         motionDetector.detect(mat).copyTo(cameraRgbaFrame.submat(rect));
         final int contourCount = motionDetector.getContourCount();
-        //mAverage.newNum(contourCount);
         mHistogram.fill((double)contourCount);
-        //mFrameCount++;
 
         mHandler.post(new Runnable() {
             @Override
@@ -167,12 +179,20 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
             }
         });
 
-        if (motionDetector.getContourCount()>mCountourThreshold && mDectectEnabled && mlux > mluxThreashold) {
+        if (contourCount > mMinCountourThreshold && contourCount < mMaxCountourThreshold && mDectectEnabled && mlux > mluxThreashold) {
             if ((System.currentTimeMillis()-mLastTriggerTime) > 1000*10) {
-                Log.i(TAG, "Message send to goose gun: " + String.valueOf(motionDetector.getContourCount()));
+                Log.i(TAG, "Message send to goose gun: " + String.valueOf(contourCount));
                 UDPcommunication UDPcommunicationTask = new UDPcommunication();
                 UDPcommunicationTask.execute("gde", this);
                 mLastTriggerTime = System.currentTimeMillis();
+
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                File mediaFile;
+                mediaFile = new File(mediaStorageDir.getPath() +
+                        File.separator + "contour_" +
+                        String.valueOf(contourCount) + "_" +
+                        timeStamp + ".png");
+                Highgui.imwrite(mediaFile.toString(), cameraRgbaFrame);
             }
         }
         return cameraRgbaFrame;
@@ -187,6 +207,7 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
         pref = mPreferences.findPreference("ROIheight");
         pref.setSummary("Maximum = " + String.valueOf(mCameraMaxHeight));
         ApplySettings();
+        mOpenCvCameraView.setFocusInfinity();
     }
 
     public void onCameraViewStopped()
@@ -197,9 +218,7 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
     {
         super.onDestroy();
         if (mOpenCvCameraView != null)
-        {
             mOpenCvCameraView.disableView();
-        }
     }
 
     public void onPause()
@@ -207,15 +226,13 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
         super.onPause();
         mSensorManager.unregisterListener(this);
         if (mOpenCvCameraView != null)
-        {
             mOpenCvCameraView.disableView();
-        }
     }
 
     public void onResume()
     {
         super.onResume();
-        OpenCVLoader.initAsync("2.4.3", this, mLoaderCallback);
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
         mSensorManager.registerListener(this, mLight, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
@@ -247,8 +264,11 @@ public class MainActivity extends Activity implements org.opencv.android.CameraB
         if (mROIwidth > mCameraMaxWidth-mROIleft) mROIwidth=mCameraMaxWidth-mROIleft;
         mPreferences.findPreference("ROIwidth").setSummary(String.valueOf(mROIwidth)+ "/" + String.valueOf(mCameraMaxWidth));
 
-        mCountourThreshold = Integer.parseInt(mSharedPrefs.getString("contoursThreshold", "10"));
-        mPreferences.findPreference("contoursThreshold").setSummary(String.valueOf(mCountourThreshold));
+        mMinCountourThreshold = Integer.parseInt(mSharedPrefs.getString("contoursMinThreshold", "10"));
+        mPreferences.findPreference("contoursMinThreshold").setSummary(String.valueOf(mMinCountourThreshold));
+
+        mMaxCountourThreshold = Integer.parseInt(mSharedPrefs.getString("contoursMaxThreshold", "150"));
+        mPreferences.findPreference("contoursMaxThreshold").setSummary(String.valueOf(mMaxCountourThreshold));
 
         mluxThreashold = Integer.parseInt(mSharedPrefs.getString("luxThreshold", "5"));
         mPreferences.findPreference("luxThreshold").setSummary(String.valueOf(mluxThreashold));

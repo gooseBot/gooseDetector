@@ -25,12 +25,20 @@
             <!--android:dialogTitle="Goose Gun UDP Port" />-->
 
         <EditTextPreference
-            android:key="contoursThreshold"
+            android:key="contoursMinThreshold"
             android:inputType="number"
             android:defaultValue="10"
-            android:title="Contours Threshold"
+            android:title="Minimum Contours Threshold"
             android:summary="Used to avoid false triggers"
-            android:dialogTitle="Contours Threshold" />
+            android:dialogTitle="Minimum Contours Threshold" />
+
+        <EditTextPreference
+            android:key="contoursMaxThreshold"
+            android:inputType="number"
+            android:defaultValue="150"
+            android:title="Maximum Contours Threshold"
+            android:summary="Used to avoid false triggers"
+            android:dialogTitle="Maximum Contours Threshold" />
 
         <EditTextPreference
             android:key="luxThreshold"

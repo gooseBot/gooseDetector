@@ -81,7 +81,6 @@ public class BackgroundSubtractorMOG extends BackgroundSubtractor {
     {
 
         super( BackgroundSubtractorMOG_2(history, nmixtures, backgroundRatio) );
-
         return;
     }
 

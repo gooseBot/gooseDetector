@@ -17,11 +17,9 @@ public abstract class BaseDetector
     protected Scalar contourColor;
     protected int contourThickness;
     protected int numContours;
-    protected boolean targetDetected;
 
     public BaseDetector()
     {
-        targetDetected = false;
         numContours = 0;
         contourThickness = 2;
         contourColor = new Scalar(255D, 0.0D, 0.0D);
@@ -35,11 +33,6 @@ public abstract class BaseDetector
     public int getContourCount()
     {
         return numContours;
-    }
-
-    public boolean isDetected()
-    {
-        return targetDetected;
     }
 
     public void setContourColor(Scalar scalar)

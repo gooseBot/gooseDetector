@@ -11,7 +11,6 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
@@ -60,17 +59,18 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     private int mCameraMaxHeight;
     private boolean mDectectEnabled;
     private static long mLastTriggerTime;
+    //private int mSubtractorBackgroundRatio;
+    private String mMotionDetector;
+    private int mSubtractorHistory;
+    private float mSubtractorThreshold;
 
     private SensorManager mSensorManager;
     private Sensor mLight;
     private float mlux;
     private float mluxThreashold;
-
     private Handler mHandler = new Handler();
-
     private Histogram mHistogram = new Histogram(5,1,30,100);
-
-    File mediaStorageDir;
+    private File mediaStorageDir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +81,6 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 
         mOpenCvCameraView = (myJavaCameraView) findViewById(R.id.goose_detect_view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
-        motionDetector = new BasicDetector(60);
 
         mPreferences = new Preferences();
         FragmentManager mFragmentManager = getFragmentManager();
@@ -122,9 +121,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
                 Log.e(TAG, "failed to create directory");
             }
         }
-
         mOpenCvCameraView.setCvCameraViewListener(this);
-
     }
 
     @Override
@@ -202,12 +199,8 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     {
         mCameraMaxWidth=i;
         mCameraMaxHeight=j;
-        Preference pref = mPreferences.findPreference("ROIwidth");
-        pref.setSummary("Maximum = " + String.valueOf(mCameraMaxWidth));
-        pref = mPreferences.findPreference("ROIheight");
-        pref.setSummary("Maximum = " + String.valueOf(mCameraMaxHeight));
-        ApplySettings();
         mOpenCvCameraView.setFocusInfinity();
+        ApplySettings();   //this ensures ROI is within bounds in addition to getting all settings
     }
 
     public void onCameraViewStopped()
@@ -273,6 +266,28 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         mluxThreashold = Integer.parseInt(mSharedPrefs.getString("luxThreshold", "5"));
         mPreferences.findPreference("luxThreshold").setSummary(String.valueOf(mluxThreashold));
 
-        mDectectEnabled = mSharedPrefs.getBoolean("dectectEnabled", false);
+//        mSubtractorBackgroundRatio = Integer.parseInt(mSharedPrefs.getString("subtractorBackgroundRatio", "80"));
+//        mPreferences.findPreference("subtractorBackgroundRatio").setSummary(String.valueOf(mSubtractorBackgroundRatio));
+
+        mSubtractorHistory = Integer.parseInt(mSharedPrefs.getString("subtractorHistory", "100"));
+        mPreferences.findPreference("subtractorHistory").setSummary(String.valueOf(mSubtractorHistory));
+
+        mSubtractorThreshold = Integer.parseInt(mSharedPrefs.getString("subtractorThreshold", "18"));
+        mPreferences.findPreference("subtractorThreshold").setSummary(String.valueOf(mSubtractorThreshold));
+
+        mMotionDetector = mSharedPrefs.getString("detectorMethod", "basic");
+        mPreferences.findPreference("detectorMethod").setSummary(mMotionDetector);
+
+        mDectectEnabled = mSharedPrefs.getBoolean("detectEnabled", false);
+
+        switch (mMotionDetector) {
+            case "basic":
+                motionDetector = new BasicDetector(60);
+                break;
+            case "subtractor":
+                //motionDetector = new BackgroundSubtractorDetector(mSubtractorBackgroundRatio);
+                motionDetector = new BackgroundSubtractorDetector(mSubtractorHistory, mSubtractorThreshold);
+                break;
+        }
     }
 }

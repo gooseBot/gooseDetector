@@ -6,8 +6,40 @@
         <CheckBoxPreference
             android:title="Enable triggering"
             android:summary="For setting up ROI values"
-            android:key="dectectEnabled"
+            android:key="detectEnabled"
             android:defaultValue="false"/>
+
+        <ListPreference
+            android:key="detectorMethod"
+            android:title="Detector Method"
+            android:dialogTitle="Select a Detector"
+            android:entries="@array/entries_detector"
+            android:entryValues="@array/entryvalues_detector"
+            android:defaultValue="basic" />
+
+        <EditTextPreference
+            android:key="subtractorHistory"
+            android:inputType="number"
+            android:defaultValue="100"
+            android:title="Subtraction History"
+            android:summary="Default is 100"
+            android:dialogTitle="Subtraction History"/>
+
+        <EditTextPreference
+            android:key="subtractorThreshold"
+            android:inputType="number"
+            android:defaultValue="16"
+            android:title="Subtraction Threshold"
+            android:summary="Default is 16"
+            android:dialogTitle="Subtraction Threshold"/>
+
+<!--        <EditTextPreference
+            android:key="subtractorBackgroundRatio"
+            android:inputType="number"
+            android:defaultValue="80"
+            android:title="Background Subtraction Detector Ratio"
+            android:summary="Default is 80"
+            android:dialogTitle="Background Subtraction Detector Ratio" />-->
 
         <!--<EditTextPreference-->
             <!--android:key="gooseGunIPaddress"-->

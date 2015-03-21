@@ -16,8 +16,6 @@ public interface IDetector
 
     public abstract int getContourCount();
 
-    public abstract boolean isDetected();
-
     public abstract void setContourColor(Scalar scalar);
 
     public abstract void setContourThickness(int i);

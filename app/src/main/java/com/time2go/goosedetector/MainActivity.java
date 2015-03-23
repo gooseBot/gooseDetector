@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -31,6 +32,7 @@ import org.opencv.highgui.Highgui;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 // The app at the URL was used as a guide from a code project entry
 //https://code.google.com/p/make-money-apps/
@@ -59,7 +61,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     private int mCameraMaxHeight;
     private boolean mDectectEnabled;
     private static long mLastTriggerTime;
-    //private int mSubtractorBackgroundRatio;
+    private int mSubtractorBackgroundRatio;
     private String mMotionDetector;
     private int mSubtractorHistory;
     private float mSubtractorThreshold;
@@ -121,6 +123,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
                 Log.e(TAG, "failed to create directory");
             }
         }
+
         mOpenCvCameraView.setCvCameraViewListener(this);
     }
 
@@ -177,7 +180,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         });
 
         if (contourCount > mMinCountourThreshold && contourCount < mMaxCountourThreshold && mDectectEnabled && mlux > mluxThreashold) {
-            if ((System.currentTimeMillis()-mLastTriggerTime) > 1000*10) {
+            if ((System.currentTimeMillis()-mLastTriggerTime) > 1000*5) {
                 Log.i(TAG, "Message send to goose gun: " + String.valueOf(contourCount));
                 UDPcommunication UDPcommunicationTask = new UDPcommunication();
                 UDPcommunicationTask.execute("gde", this);
@@ -197,9 +200,10 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 
     public void onCameraViewStarted(int i, int j)
     {
-        mCameraMaxWidth=i;
-        mCameraMaxHeight=j;
+        mOpenCvCameraView.setMaxResolution();  //resets camera set focus next
         mOpenCvCameraView.setFocusInfinity();
+        mCameraMaxWidth=mOpenCvCameraView.getCameraWidth();
+        mCameraMaxHeight=mOpenCvCameraView.getCameraHeight();
         ApplySettings();   //this ensures ROI is within bounds in addition to getting all settings
     }
 
@@ -266,14 +270,14 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         mluxThreashold = Integer.parseInt(mSharedPrefs.getString("luxThreshold", "5"));
         mPreferences.findPreference("luxThreshold").setSummary(String.valueOf(mluxThreashold));
 
-//        mSubtractorBackgroundRatio = Integer.parseInt(mSharedPrefs.getString("subtractorBackgroundRatio", "80"));
-//        mPreferences.findPreference("subtractorBackgroundRatio").setSummary(String.valueOf(mSubtractorBackgroundRatio));
+        mSubtractorBackgroundRatio = Integer.parseInt(mSharedPrefs.getString("subtractorBackgroundRatio", "80"));
+        mPreferences.findPreference("subtractorBackgroundRatio").setSummary(String.valueOf(mSubtractorBackgroundRatio));
 
-        mSubtractorHistory = Integer.parseInt(mSharedPrefs.getString("subtractorHistory", "100"));
+        mSubtractorHistory = Integer.parseInt(mSharedPrefs.getString("subtractorHistory", "10"));
         mPreferences.findPreference("subtractorHistory").setSummary(String.valueOf(mSubtractorHistory));
-
-        mSubtractorThreshold = Integer.parseInt(mSharedPrefs.getString("subtractorThreshold", "18"));
-        mPreferences.findPreference("subtractorThreshold").setSummary(String.valueOf(mSubtractorThreshold));
+//
+//        mSubtractorThreshold = Integer.parseInt(mSharedPrefs.getString("subtractorThreshold", "18"));
+//        mPreferences.findPreference("subtractorThreshold").setSummary(String.valueOf(mSubtractorThreshold));
 
         mMotionDetector = mSharedPrefs.getString("detectorMethod", "basic");
         mPreferences.findPreference("detectorMethod").setSummary(mMotionDetector);
@@ -285,8 +289,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
                 motionDetector = new BasicDetector(60);
                 break;
             case "subtractor":
-                //motionDetector = new BackgroundSubtractorDetector(mSubtractorBackgroundRatio);
-                motionDetector = new BackgroundSubtractorDetector(mSubtractorHistory, mSubtractorThreshold);
+                motionDetector = new BackgroundSubtractorDetector(mSubtractorHistory, mSubtractorBackgroundRatio/100);
                 break;
         }
     }

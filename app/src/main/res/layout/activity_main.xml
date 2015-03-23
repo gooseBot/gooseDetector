@@ -10,8 +10,8 @@
         android:layout_height="wrap_content">
         <com.time2go.goosedetector.myJavaCameraView
             android:id="@+id/goose_detect_view"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent" />
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">

@@ -18,7 +18,8 @@ public final class BackgroundSubtractorDetector extends BaseDetector implements 
     private BackgroundSubtractorMOG bg;
 
     //public BackgroundSubtractorDetector(int history, float threshold){
-    public BackgroundSubtractorDetector(int history, int backgroundRatio){
+    //public BackgroundSubtractorDetector(int history, int backgroundRatio){
+    public BackgroundSubtractorDetector(){
         //history around 10, mixtures 3-5, background ratio .5 to .8?
         //bg = new BackgroundSubtractorMOG(history, MIXTURES, (backgroundRatio / 100.0));
         bg = new BackgroundSubtractorMOG();

@@ -57,14 +57,15 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     private int mROIheight;
     private int mMinCountourThreshold;
     private int mMaxCountourThreshold;
+    private int mBasicDetectorThreshold;
     private int mCameraMaxWidth;
     private int mCameraMaxHeight;
     private boolean mDectectEnabled;
     private static long mLastTriggerTime;
-    private int mSubtractorBackgroundRatio;
+    //private int mSubtractorBackgroundRatio;
     private String mMotionDetector;
-    private int mSubtractorHistory;
-    private float mSubtractorThreshold;
+    //private int mSubtractorHistory;
+    //private float mSubtractorThreshold;
 
     private SensorManager mSensorManager;
     private Sensor mLight;
@@ -270,11 +271,14 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         mluxThreashold = Integer.parseInt(mSharedPrefs.getString("luxThreshold", "5"));
         mPreferences.findPreference("luxThreshold").setSummary(String.valueOf(mluxThreashold));
 
-        mSubtractorBackgroundRatio = Integer.parseInt(mSharedPrefs.getString("subtractorBackgroundRatio", "80"));
-        mPreferences.findPreference("subtractorBackgroundRatio").setSummary(String.valueOf(mSubtractorBackgroundRatio));
+//        mSubtractorBackgroundRatio = Integer.parseInt(mSharedPrefs.getString("subtractorBackgroundRatio", "80"));
+//        mPreferences.findPreference("subtractorBackgroundRatio").setSummary(String.valueOf(mSubtractorBackgroundRatio));
+//
+//        mSubtractorHistory = Integer.parseInt(mSharedPrefs.getString("subtractorHistory", "10"));
+//        mPreferences.findPreference("subtractorHistory").setSummary(String.valueOf(mSubtractorHistory));
 
-        mSubtractorHistory = Integer.parseInt(mSharedPrefs.getString("subtractorHistory", "10"));
-        mPreferences.findPreference("subtractorHistory").setSummary(String.valueOf(mSubtractorHistory));
+        mBasicDetectorThreshold = Integer.parseInt(mSharedPrefs.getString("basicDetectorThreshold", "60"));
+        mPreferences.findPreference("basicDetectorThreshold").setSummary(String.valueOf(mBasicDetectorThreshold));
 //
 //        mSubtractorThreshold = Integer.parseInt(mSharedPrefs.getString("subtractorThreshold", "18"));
 //        mPreferences.findPreference("subtractorThreshold").setSummary(String.valueOf(mSubtractorThreshold));
@@ -286,10 +290,11 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 
         switch (mMotionDetector) {
             case "basic":
-                motionDetector = new BasicDetector(60);
+                motionDetector = new BasicDetector(mBasicDetectorThreshold);
                 break;
             case "subtractor":
-                motionDetector = new BackgroundSubtractorDetector(mSubtractorHistory, mSubtractorBackgroundRatio/100);
+                //motionDetector = new BackgroundSubtractorDetector(mSubtractorHistory, mSubtractorBackgroundRatio/100);
+                motionDetector = new BackgroundSubtractorDetector();
                 break;
         }
     }

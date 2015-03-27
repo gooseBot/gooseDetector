@@ -24,17 +24,9 @@
                 android:defaultValue="10"
                 android:title="Subtraction History"
                 android:summary="Default is 10"
-                android:dialogTitle="Subtraction History"/>-->
+                android:dialogTitle="Subtraction History"/>
 
-    <!--        <EditTextPreference
-                android:key="subtractorThreshold"
-                android:inputType="number"
-                android:defaultValue="16"
-                android:title="Subtraction Threshold"
-                android:summary="Default is 16"
-                android:dialogTitle="Subtraction Threshold"/>-->
-
-<!--           <EditTextPreference
+           <EditTextPreference
                 android:key="subtractorBackgroundRatio"
                 android:inputType="number"
                 android:defaultValue="80"
@@ -50,21 +42,6 @@
             android:title="Basic Detector Threshold"
             android:summary="Default is 60"
             android:dialogTitle="Basic Detector Threshold"/>
-
-        <!--<EditTextPreference-->
-            <!--android:key="gooseGunIPaddress"-->
-            <!--android:title="Goose Gun IP Address"-->
-            <!--android:defaultValue="192.168.1.178"-->
-            <!--android:summary="xxx.xxx.xxx.xxx"-->
-            <!--android:dialogTitle="Goose Gun IP Address" />-->
-
-        <!--<EditTextPreference-->
-            <!--android:key="gooseGunUDPport"-->
-            <!--android:title="Goose Gun UDP Port"-->
-            <!--android:inputType="number"-->
-            <!--android:defaultValue="8888"-->
-            <!--android:summary="xxxx"-->
-            <!--android:dialogTitle="Goose Gun UDP Port" />-->
 
         <EditTextPreference
             android:key="contoursMinThreshold"

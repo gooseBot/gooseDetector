@@ -192,7 +192,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
                 mediaFile = new File(mediaStorageDir.getPath() +
                         File.separator + "contour_" +
                         String.valueOf(contourCount) + "_" +
-                        timeStamp + ".png");
+                        timeStamp + ".jpg");
                 Highgui.imwrite(mediaFile.toString(), cameraRgbaFrame);
             }
         }
@@ -280,9 +280,6 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         mBasicDetectorThreshold = Integer.parseInt(mSharedPrefs.getString("basicDetectorThreshold", "60"));
         mPreferences.findPreference("basicDetectorThreshold").setSummary(String.valueOf(mBasicDetectorThreshold));
 //
-//        mSubtractorThreshold = Integer.parseInt(mSharedPrefs.getString("subtractorThreshold", "18"));
-//        mPreferences.findPreference("subtractorThreshold").setSummary(String.valueOf(mSubtractorThreshold));
-
         mMotionDetector = mSharedPrefs.getString("detectorMethod", "basic");
         mPreferences.findPreference("detectorMethod").setSummary(mMotionDetector);
 

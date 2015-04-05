@@ -38,6 +38,10 @@ public final class BackgroundSubtractorDetector extends BaseDetector implements 
         //bg = new BackgroundSubtractorMOG2(history, threshold, false);
     }
 
+    public void saveFgMask(){
+
+    }
+
     @Override
     public Mat detect(Mat source) {
 

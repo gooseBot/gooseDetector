@@ -28,6 +28,10 @@ public final class BasicDetector extends BaseDetector implements IDetector
         threshold = i;
     }
 
+    public void saveFgMask(){
+
+    }
+
     public Mat detect(Mat mat)
     {
         Size size = mat.size();

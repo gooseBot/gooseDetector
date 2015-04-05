@@ -19,4 +19,6 @@ public interface IDetector
     public abstract void setContourColor(Scalar scalar);
 
     public abstract void setContourThickness(int i);
+
+    public abstract void saveFgMask();
 }

@@ -61,11 +61,13 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     private int mCameraMaxWidth;
     private int mCameraMaxHeight;
     private boolean mDectectEnabled;
+    private int mHSVproximity;
     private static long mLastTriggerTime;
     //private int mSubtractorBackgroundRatio;
     private String mMotionDetector;
-    //private int mSubtractorHistory;
-    //private float mSubtractorThreshold;
+    private int mSubtractorHistory;
+    private int mSubtractorThreshold;
+    private int mShadowDetection;
 
     private SensorManager mSensorManager;
     private Sensor mLight;
@@ -187,9 +189,10 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
                 UDPcommunicationTask.execute("gde", this);
                 mLastTriggerTime = System.currentTimeMillis();
 
+                motionDetector.saveFgMask();
+
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-                File mediaFile;
-                mediaFile = new File(mediaStorageDir.getPath() +
+                File mediaFile = new File(mediaStorageDir.getPath() +
                         File.separator + "contour_" +
                         String.valueOf(contourCount) + "_" +
                         timeStamp + ".jpg");
@@ -274,12 +277,21 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 //        mSubtractorBackgroundRatio = Integer.parseInt(mSharedPrefs.getString("subtractorBackgroundRatio", "80"));
 //        mPreferences.findPreference("subtractorBackgroundRatio").setSummary(String.valueOf(mSubtractorBackgroundRatio));
 //
-//        mSubtractorHistory = Integer.parseInt(mSharedPrefs.getString("subtractorHistory", "10"));
-//        mPreferences.findPreference("subtractorHistory").setSummary(String.valueOf(mSubtractorHistory));
+        mSubtractorHistory = Integer.parseInt(mSharedPrefs.getString("subtractorHistory", "3"));
+        mPreferences.findPreference("subtractorHistory").setSummary(String.valueOf(mSubtractorHistory));
+
+        mSubtractorThreshold = Integer.parseInt(mSharedPrefs.getString("subtractorThreshold", "64"));
+        mPreferences.findPreference("subtractorThreshold").setSummary(String.valueOf(mSubtractorThreshold));
+
+        mShadowDetection = Integer.parseInt(mSharedPrefs.getString("shadowDetection", "40"));
+        mPreferences.findPreference("shadowDetection").setSummary(String.valueOf(mShadowDetection));
+
+        mHSVproximity = Integer.parseInt(mSharedPrefs.getString("HSVproximity", "5"));
+        mPreferences.findPreference("HSVproximity").setSummary(String.valueOf(mHSVproximity));
 
         mBasicDetectorThreshold = Integer.parseInt(mSharedPrefs.getString("basicDetectorThreshold", "60"));
         mPreferences.findPreference("basicDetectorThreshold").setSummary(String.valueOf(mBasicDetectorThreshold));
-//
+
         mMotionDetector = mSharedPrefs.getString("detectorMethod", "basic");
         mPreferences.findPreference("detectorMethod").setSummary(mMotionDetector);
 
@@ -289,9 +301,14 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
             case "basic":
                 motionDetector = new BasicDetector(mBasicDetectorThreshold);
                 break;
-            case "subtractor":
+            case "subtractorMOG":
                 //motionDetector = new BackgroundSubtractorDetector(mSubtractorHistory, mSubtractorBackgroundRatio/100);
                 motionDetector = new BackgroundSubtractorDetector();
+                break;
+            case "subtractorMOG2":
+                //motionDetector = new BackgroundSubtractorDetector2();
+                motionDetector = new BackgroundSubtractorDetector2(mSubtractorHistory,
+                        mSubtractorThreshold, mShadowDetection, mediaStorageDir, mHSVproximity);
                 break;
         }
     }

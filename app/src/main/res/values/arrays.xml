@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="entries_detector">
-        <item>Subtractor Detector</item>
+        <item>Subtractor MOG Detector</item>
+        <item>Subtractor MOG2 Detector</item>
         <item>Basic Detector</item>
     </string-array>
 
     <string-array name="entryvalues_detector">
-        <item>subtractor</item>
+        <item>subtractorMOG</item>
+        <item>subtractorMOG2</item>
         <item>basic</item>
     </string-array>
 </resources>

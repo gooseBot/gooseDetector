@@ -17,7 +17,7 @@
             android:entryValues="@array/entryvalues_detector"
             android:defaultValue="basic" />
 
-<!--        <PreferenceCategory android:title="Subtractor Detector Settings">
+<!--        <PreferenceCategory android:title="MOG Subtractor Detector Settings">
             <EditTextPreference
                 android:key="subtractorHistory"
                 android:inputType="number"
@@ -34,6 +34,40 @@
                 android:summary="Default is 80"
                 android:dialogTitle="Background Subtraction Detector Ratio" />
         </PreferenceCategory>-->
+
+        <PreferenceScreen android:title="MOG2 Subtractor Detector Settings">
+            <EditTextPreference
+                android:key="subtractorHistory"
+                android:inputType="number"
+                android:defaultValue="3"
+                android:title="Subtraction History"
+                android:summary="Default is 3"
+                android:dialogTitle="Subtraction History"/>
+
+           <EditTextPreference
+                android:key="subtractorThreshold"
+                android:inputType="number"
+                android:defaultValue="64"
+                android:title="Background Subtraction Threshold"
+                android:summary="Default is 64"
+                android:dialogTitle="Background Subtraction Threshold" />
+
+            <EditTextPreference
+                android:key="shadowDetection"
+                android:inputType="number"
+                android:defaultValue="40"
+                android:title="Shadow Detection"
+                android:summary="Default is 40"
+                android:dialogTitle="Shadow Detection" />
+
+            <EditTextPreference
+                android:key="HSVproximity"
+                android:inputType="number"
+                android:defaultValue="5"
+                android:title="Sun Shadow Removal HSV"
+                android:summary="Default is 5"
+                android:dialogTitle="Sun Shadow Removal HSV" />
+        </PreferenceScreen>
 
         <EditTextPreference
             android:key="basicDetectorThreshold"

@@ -287,7 +287,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         mShadowDetection = Integer.parseInt(mSharedPrefs.getString("shadowDetection", "40"));
         mPreferences.findPreference("shadowDetection").setSummary(String.valueOf(mShadowDetection));
 
-        mFtau = Integer.parseInt(mSharedPrefs.getString("fTau", "5"));
+        mFtau = Double.parseDouble(mSharedPrefs.getString("fTau", "5"));
         mPreferences.findPreference("fTau").setSummary(String.valueOf(mFtau));
 
         mHSVproximity = Integer.parseInt(mSharedPrefs.getString("HSVproximity", "5"));

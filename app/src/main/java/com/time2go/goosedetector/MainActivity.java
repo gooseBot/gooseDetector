@@ -62,6 +62,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     private int mCameraMaxHeight;
     private boolean mDectectEnabled;
     private int mHSVproximity;
+    private double mFtau;
     private static long mLastTriggerTime;
     //private int mSubtractorBackgroundRatio;
     private String mMotionDetector;
@@ -171,14 +172,14 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         Mat mat = cameraRgbaFrame.submat(rect);
         motionDetector.detect(mat).copyTo(cameraRgbaFrame.submat(rect));
         final int contourCount = motionDetector.getContourCount();
-        mHistogram.fill((double)contourCount);
+        //mHistogram.fill((double)contourCount);
 
         mHandler.post(new Runnable() {
             @Override
             public void run() {
             ((TextView)findViewById(R.id.message)).setText("Count "+String.valueOf(contourCount));
             ((TextView)findViewById(R.id.average)).setText("Average "+String.valueOf(mHistogram.getAvg()));
-            ((TextView)findViewById(R.id.histogramMean)).setText("Histogram "+String.valueOf(mHistogram.mean()));
+            //((TextView)findViewById(R.id.histogramMean)).setText("Histogram "+String.valueOf(mHistogram.mean()));
             }
         });
 
@@ -286,6 +287,9 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         mShadowDetection = Integer.parseInt(mSharedPrefs.getString("shadowDetection", "40"));
         mPreferences.findPreference("shadowDetection").setSummary(String.valueOf(mShadowDetection));
 
+        mFtau = Integer.parseInt(mSharedPrefs.getString("fTau", "5"));
+        mPreferences.findPreference("fTau").setSummary(String.valueOf(mFtau));
+
         mHSVproximity = Integer.parseInt(mSharedPrefs.getString("HSVproximity", "5"));
         mPreferences.findPreference("HSVproximity").setSummary(String.valueOf(mHSVproximity));
 
@@ -308,7 +312,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
             case "subtractorMOG2":
                 //motionDetector = new BackgroundSubtractorDetector2();
                 motionDetector = new BackgroundSubtractorDetector2(mSubtractorHistory,
-                        mSubtractorThreshold, mShadowDetection, mediaStorageDir, mHSVproximity);
+                        mSubtractorThreshold, mShadowDetection, mediaStorageDir, mHSVproximity, mFtau);
                 break;
         }
     }

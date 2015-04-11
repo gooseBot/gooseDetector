@@ -67,6 +67,14 @@
                 android:title="Sun Shadow Removal HSV"
                 android:summary="Default is 5"
                 android:dialogTitle="Sun Shadow Removal HSV" />
+
+            <EditTextPreference
+                android:key="fTau"
+                android:inputType="numberDecimal"
+                android:defaultValue="5"
+                android:title="Shadow pixel darkness factor"
+                android:summary="Default is 5"
+                android:dialogTitle="Shadow pixel darkness factor .5=2x" />
         </PreferenceScreen>
 
         <EditTextPreference

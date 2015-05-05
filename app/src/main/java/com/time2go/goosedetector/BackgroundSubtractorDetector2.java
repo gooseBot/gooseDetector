@@ -96,7 +96,7 @@ public final class BackgroundSubtractorDetector2 extends BaseDetector implements
         current++;
         int indexCurrent = current % sunShadowHistory;
         int indexOldest = (current-(sunShadowHistory-1)) % sunShadowHistory;
-        Imgproc.cvtColor(source, sourceHSV, Imgproc.COLOR_BGR2HSV_FULL);
+        Imgproc.cvtColor(source, sourceHSV, Imgproc.COLOR_RGB2HSV_FULL);
         //Imgproc.cvtColor(sourceRGB, sourceHSV, Imgproc.COLOR_RGB2HSV_FULL);
         sourceHSV.copyTo(buf[indexCurrent]);
 

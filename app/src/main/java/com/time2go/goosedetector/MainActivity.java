@@ -28,6 +28,7 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.opencv.highgui.Highgui;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -43,6 +44,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 
     private static final String TAG = "OCVSample::Activity";
     private Mat cameraRgbaFrame;
+    //private Mat cameraBgrFrame = new Mat();
     private myJavaCameraView mOpenCvCameraView;
     private IDetector motionDetector;
     private DrawerLayout mDrawerLayout;
@@ -75,7 +77,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     private float mlux;
     private float mluxThreashold;
     private Handler mHandler = new Handler();
-    private Histogram mHistogram = new Histogram(5,1,30,100);
+    //private Histogram mHistogram = new Histogram(5,1,30,100);
     private File mediaStorageDir;
 
     @Override
@@ -178,7 +180,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
             @Override
             public void run() {
             ((TextView)findViewById(R.id.message)).setText("Count "+String.valueOf(contourCount));
-            ((TextView)findViewById(R.id.average)).setText("Average "+String.valueOf(mHistogram.getAvg()));
+            //((TextView)findViewById(R.id.average)).setText("Average "+String.valueOf(mHistogram.getAvg()));
             //((TextView)findViewById(R.id.histogramMean)).setText("Histogram "+String.valueOf(mHistogram.mean()));
             }
         });
@@ -190,14 +192,16 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
                 UDPcommunicationTask.execute("gde", this);
                 mLastTriggerTime = System.currentTimeMillis();
 
-                motionDetector.saveFgMask();
+                //motionDetector.saveFgMask();
 
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
                 File mediaFile = new File(mediaStorageDir.getPath() +
                         File.separator + "contour_" +
                         String.valueOf(contourCount) + "_" +
                         timeStamp + ".jpg");
-                Highgui.imwrite(mediaFile.toString(), cameraRgbaFrame);
+                Mat cameraBgrFrame = new Mat();
+                Imgproc.cvtColor(cameraRgbaFrame,cameraBgrFrame,Imgproc.COLOR_RGBA2BGR);
+                Highgui.imwrite(mediaFile.toString(), cameraBgrFrame);
             }
         }
         return cameraRgbaFrame;

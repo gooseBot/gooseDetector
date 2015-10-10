@@ -5,7 +5,7 @@
 
         <CheckBoxPreference
             android:title="Enable triggering"
-            android:summary="For setting up ROI values"
+            android:summary="Enable detection messages to goose gun"
             android:key="detectEnabled"
             android:defaultValue="false"/>
 
@@ -29,18 +29,16 @@
            <EditTextPreference
                 android:key="subtractorThreshold"
                 android:inputType="number"
-                android:defaultValue="64"
+                android:defaultValue="32"
                 android:title="Background Subtraction Threshold"
-                android:summary="Default is 64"
+                android:summary="Default is 32"
                 android:dialogTitle="Background Subtraction Threshold" />
 
-            <EditTextPreference
+            <CheckBoxPreference
                 android:key="shadowDetection"
-                android:inputType="number"
-                android:defaultValue="40"
+                android:defaultValue="false"
                 android:title="Shadow Detection"
-                android:summary="Default is 40"
-                android:dialogTitle="Shadow Detection" />
+                android:summary="Default is false"/>
 
             <EditTextPreference
                 android:key="HSVproximity"
@@ -70,7 +68,7 @@
         <EditTextPreference
             android:key="contoursMinThreshold"
             android:inputType="number"
-            android:defaultValue="10"
+            android:defaultValue="1"
             android:title="Minimum Contours Threshold"
             android:summary="Used to avoid false triggers"
             android:dialogTitle="Minimum Contours Threshold" />
@@ -78,7 +76,7 @@
         <EditTextPreference
             android:key="contoursMaxThreshold"
             android:inputType="number"
-            android:defaultValue="150"
+            android:defaultValue="20"
             android:title="Maximum Contours Threshold"
             android:summary="Used to avoid false triggers"
             android:dialogTitle="Maximum Contours Threshold" />

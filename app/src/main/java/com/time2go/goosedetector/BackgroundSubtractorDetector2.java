@@ -12,7 +12,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.video.BackgroundSubtractorMOG2;
@@ -32,36 +31,18 @@ public final class BackgroundSubtractorDetector2 extends BaseDetector implements
     private Mat sourceRGB = new Mat();
     private Mat myMask;
     private int sunShadowHistory=3;
-    private static final String TAG = "OCVSample::Activity";
-    //private double mShadowDetect;
-    //private double mFtau;
+    private static final String TAG = "BackgroundSubtractorDetector2";
     private int current;
     private File mMediaStorageDir;
     private int mHSVproximity=5;
-    private static int allContours=-1;
-    private static int filled=-1;
 
-    public BackgroundSubtractorDetector2(int history, float threshold, double shadowDetect, File mediaDir, int HSVproximity, double fTau) {
+    public BackgroundSubtractorDetector2(int history, float threshold, boolean shadowDetect, File mediaDir, int HSVproximity, double fTau) {
         //To reduce noise artifacts, we increase varThreshold from the default 16 to 64
-        //mShadowDetect=shadowDetect;
         mMediaStorageDir=mediaDir;
         mHSVproximity=HSVproximity;
-        //mFtau=fTau;
-        //bg = new BackgroundSubtractorMOG2(history, threshold, true);
-        bg = Video.createBackgroundSubtractorMOG2();
-        bg.setDetectShadows(false);
-        //bg = new BackgroundSubtractorMOG2();
-        //bg.setInt("nmixtures", 3);
-        //bg.setDouble("fTau",mFtau);
-        //bg.setInt("nShadowDetection", 40);
-        //bg.setDouble("nShadowDetection", mShadowDetect);
-
+        bg = Video.createBackgroundSubtractorMOG2(history, threshold, shadowDetect);
         //mBgMog2.setInt("nmixtures" , 3);
-        //bg.setDouble("fVarInit" , 80.0);
         //mBgMog2.setDouble("fTau" , 0.2);
-        //bg.setDouble("fVarMin" , 200.0);
-        //bg.setDouble("fVarMax" , 80.0);
-        //bg.setBool("detectShadows", true);
 
         buf = new Mat[sunShadowHistory];
         for (int i=0;i<sunShadowHistory;i++) {
@@ -72,28 +53,24 @@ public final class BackgroundSubtractorDetector2 extends BaseDetector implements
     public void saveFgMask(){
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         File mediaFile = new File(mMediaStorageDir.getPath() +
-                File.separator + "contour_" +
-                timeStamp + "_fgMask.png");
+                File.separator + timeStamp + "_fgMask.png");
         Imgcodecs.imwrite(mediaFile.toString(), fgMask);
     }
 
     @Override
     public Mat detect(Mat source) {
 
-        //resize to equal preview size
-        //Size previewSize = new Size(1920,1080);
-        //Imgproc.resize(source, source, previewSize);
+        int allContours=-1;
+        int filled=-1;
+
         current++;
         int indexCurrent = current % sunShadowHistory;
         int indexOldest = (current-(sunShadowHistory-1)) % sunShadowHistory;
         Imgproc.cvtColor(source, sourceHSV, Imgproc.COLOR_RGB2HSV_FULL);
-        //Imgproc.cvtColor(sourceRGB, sourceHSV, Imgproc.COLOR_RGB2HSV_FULL);
         sourceHSV.copyTo(buf[indexCurrent]);
 
-        //bg.apply(sourceRGB, fgMask, LEARNING_RATE);
         //bg.apply(source, fgMask, LEARNING_RATE);
         bg.apply(source, fgMask);
-        //save the file for debugging
 
         //Imgproc.threshold(fgMask, fgMask, 1, 255, Imgproc.THRESH_BINARY);
         Imgproc.erode(fgMask, fgMask, new Mat());

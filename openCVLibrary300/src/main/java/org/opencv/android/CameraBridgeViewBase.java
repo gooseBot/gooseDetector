@@ -411,6 +411,9 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
             Canvas canvas = getHolder().lockCanvas();
             if (canvas != null) {
                 canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR);
+
+                //I added this to get the darned preview to show the whole image.
+                mScale = Math.min(((float)canvas.getHeight())/mCacheBitmap.getHeight(), ((float)canvas.getWidth())/mCacheBitmap.getWidth());
                 Log.d(TAG, "mStretch value: " + mScale);
 
                 if (mScale != 0) {

@@ -23,26 +23,19 @@
                 style="@android:style/TextAppearance.Medium"
                 android:text="test"/>
             <TextView
+                android:id="@+id/separator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#ffffffff"
+                style="@android:style/TextAppearance.Medium"
+                android:text=", "/>
+            <TextView
                 android:id="@+id/lux"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="#ffffffff"
                 style="@android:style/TextAppearance.Medium"
                 android:text="Lux"/>
-            <TextView
-                android:id="@+id/average"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#ffffffff"
-                style="@android:style/TextAppearance.Medium"
-                android:text="Average"/>
-            <TextView
-                android:id="@+id/histogramMean"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#ffffffff"
-                style="@android:style/TextAppearance.Medium"
-                android:text="Histogram"/>
         </LinearLayout>
     </FrameLayout>
 

@@ -26,13 +26,14 @@ public class UDPcommunication extends AsyncTask<Object, Boolean, String> {
 
         try {
             ds = new DatagramSocket();
-            InetAddress serverAddr = InetAddress.getByName("crazycats.Linksysnet.com");
+            InetAddress serverAddr = InetAddress.getByName("crazycats.ddns.net");
             DatagramPacket dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(), serverAddr, UDP_SERVER_PORT);
             ds.send(dp);
             DatagramPacket dpr = new DatagramPacket(lMsg, lMsg.length);
             ds.setSoTimeout(4000);
             ds.receive(dpr);
-            Log.i(TAG,"UDP packet received");
+            String lText = new String(lMsg, 0, dpr.getLength());
+            Log.i("UDP packet received", lText);
         } catch (SocketException e) {
             e.printStackTrace();
         }catch (UnknownHostException e) {

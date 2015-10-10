@@ -32,7 +32,7 @@ public class myJavaCameraView extends JavaCameraView {
 
     public int getCameraWidth(){
         return mMaxWidth;
-    }
+    }  // return picture size instead??
 
     public int getCameraHeight(){
         return mMaxHeight;
@@ -43,14 +43,12 @@ public class myJavaCameraView extends JavaCameraView {
         List<Camera.Size> sizes = params.getSupportedPreviewSizes();
         mMaxHeight = sizes.get(0).height;    //0 seems to be the highest resolution
         mMaxWidth = sizes.get(0).width;
-        List<Camera.Size> PictureSizes = params.getSupportedPictureSizes();
         //be sure to set view layout to "match parent" or image wont be scaled to fit the screen.
-        //params.setPictureSize(PictureSizes.get(3).width, PictureSizes.get(3).height);
-        //params.setPictureSize(mMaxWidth, mMaxHeight);
+        // I also added a mScale calculation to CameraBridgeViewBase in openCVLibrary300.  If you upgrade be sure
+        // to merge in this change.  The addition is below it goes into deliverAndDrawFrame
+        // mScale = Math.min(((float)canvas.getHeight())/mCacheBitmap.getHeight(), ((float)canvas.getWidth())/mCacheBitmap.getWidth());
         disconnectCamera();
-        connectCamera(PictureSizes.get(0).width, PictureSizes.get(0).height);
-        //params.setPreviewSize(mMaxWidth, mMaxHeight);
-        //mCamera.setParameters(params);
+        connectCamera(mMaxWidth, mMaxHeight);
     }
 
     public void takePicture(final String fileName) {

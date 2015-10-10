@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -67,7 +66,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     private String mMotionDetector;
     private int mSubtractorHistory;
     private int mSubtractorThreshold;
-    private int mShadowDetection;
+    private boolean mShadowDetection;
 
     private SensorManager mSensorManager;
     private Sensor mLight;
@@ -189,9 +188,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
                 File mediaFile = new File(mediaStorageDir.getPath() +
-                        File.separator + "contour_" +
-                        String.valueOf(contourCount) + "_" +
-                        timeStamp + ".jpg");
+                        File.separator + timeStamp + "_c" + String.valueOf(contourCount) + ".jpg");
                 Mat cameraBgrFrame = new Mat();
                 Imgproc.cvtColor(cameraRgbaFrame,cameraBgrFrame,Imgproc.COLOR_RGBA2BGR);
                 Imgcodecs.imwrite(mediaFile.toString(), cameraBgrFrame);
@@ -276,11 +273,10 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         mSubtractorHistory = Integer.parseInt(mSharedPrefs.getString("subtractorHistory", "3"));
         mPreferences.findPreference("subtractorHistory").setSummary(String.valueOf(mSubtractorHistory));
 
-        mSubtractorThreshold = Integer.parseInt(mSharedPrefs.getString("subtractorThreshold", "64"));
+        mSubtractorThreshold = Integer.parseInt(mSharedPrefs.getString("subtractorThreshold", "16"));
         mPreferences.findPreference("subtractorThreshold").setSummary(String.valueOf(mSubtractorThreshold));
 
-        mShadowDetection = Integer.parseInt(mSharedPrefs.getString("shadowDetection", "40"));
-        mPreferences.findPreference("shadowDetection").setSummary(String.valueOf(mShadowDetection));
+        mShadowDetection = mSharedPrefs.getBoolean("shadowDetection", false);
 
         mFtau = Double.parseDouble(mSharedPrefs.getString("fTau", "5"));
         mPreferences.findPreference("fTau").setSummary(String.valueOf(mFtau));

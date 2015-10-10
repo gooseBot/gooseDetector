@@ -27,13 +27,12 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
-import org.opencv.highgui.Highgui;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 // The app at the URL was used as a guide from a code project entry
 //https://code.google.com/p/make-money-apps/
@@ -44,7 +43,6 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 
     private static final String TAG = "OCVSample::Activity";
     private Mat cameraRgbaFrame;
-    //private Mat cameraBgrFrame = new Mat();
     private myJavaCameraView mOpenCvCameraView;
     private IDetector motionDetector;
     private DrawerLayout mDrawerLayout;
@@ -66,7 +64,6 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     private int mHSVproximity;
     private double mFtau;
     private static long mLastTriggerTime;
-    //private int mSubtractorBackgroundRatio;
     private String mMotionDetector;
     private int mSubtractorHistory;
     private int mSubtractorThreshold;
@@ -77,7 +74,6 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     private float mlux;
     private float mluxThreashold;
     private Handler mHandler = new Handler();
-    //private Histogram mHistogram = new Histogram(5,1,30,100);
     private File mediaStorageDir;
 
     @Override
@@ -88,7 +84,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         setContentView(R.layout.activity_main);
 
         mOpenCvCameraView = (myJavaCameraView) findViewById(R.id.goose_detect_view);
-        mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
+        mOpenCvCameraView.setCvCameraViewListener(this);
 
         mPreferences = new Preferences();
         FragmentManager mFragmentManager = getFragmentManager();
@@ -130,7 +126,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
             }
         }
 
-        mOpenCvCameraView.setCvCameraViewListener(this);
+        mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
     }
 
     @Override
@@ -174,14 +170,11 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         Mat mat = cameraRgbaFrame.submat(rect);
         motionDetector.detect(mat).copyTo(cameraRgbaFrame.submat(rect));
         final int contourCount = motionDetector.getContourCount();
-        //mHistogram.fill((double)contourCount);
 
         mHandler.post(new Runnable() {
             @Override
             public void run() {
             ((TextView)findViewById(R.id.message)).setText("Count "+String.valueOf(contourCount));
-            //((TextView)findViewById(R.id.average)).setText("Average "+String.valueOf(mHistogram.getAvg()));
-            //((TextView)findViewById(R.id.histogramMean)).setText("Histogram "+String.valueOf(mHistogram.mean()));
             }
         });
 
@@ -201,7 +194,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
                         timeStamp + ".jpg");
                 Mat cameraBgrFrame = new Mat();
                 Imgproc.cvtColor(cameraRgbaFrame,cameraBgrFrame,Imgproc.COLOR_RGBA2BGR);
-                Highgui.imwrite(mediaFile.toString(), cameraBgrFrame);
+                Imgcodecs.imwrite(mediaFile.toString(), cameraBgrFrame);
             }
         }
         return cameraRgbaFrame;
@@ -209,6 +202,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 
     public void onCameraViewStarted(int i, int j)
     {
+        //Camera.Parameters params = mCamera.getParameters();
         mOpenCvCameraView.setMaxResolution();  //resets camera set focus next
         mOpenCvCameraView.setFocusInfinity();
         mCameraMaxWidth=mOpenCvCameraView.getCameraWidth();
@@ -238,7 +232,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     public void onResume()
     {
         super.onResume();
-        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
         mSensorManager.registerListener(this, mLight, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
@@ -279,9 +273,6 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         mluxThreashold = Integer.parseInt(mSharedPrefs.getString("luxThreshold", "5"));
         mPreferences.findPreference("luxThreshold").setSummary(String.valueOf(mluxThreashold));
 
-//        mSubtractorBackgroundRatio = Integer.parseInt(mSharedPrefs.getString("subtractorBackgroundRatio", "80"));
-//        mPreferences.findPreference("subtractorBackgroundRatio").setSummary(String.valueOf(mSubtractorBackgroundRatio));
-//
         mSubtractorHistory = Integer.parseInt(mSharedPrefs.getString("subtractorHistory", "3"));
         mPreferences.findPreference("subtractorHistory").setSummary(String.valueOf(mSubtractorHistory));
 
@@ -309,12 +300,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
             case "basic":
                 motionDetector = new BasicDetector(mBasicDetectorThreshold);
                 break;
-            case "subtractorMOG":
-                //motionDetector = new BackgroundSubtractorDetector(mSubtractorHistory, mSubtractorBackgroundRatio/100);
-                motionDetector = new BackgroundSubtractorDetector();
-                break;
             case "subtractorMOG2":
-                //motionDetector = new BackgroundSubtractorDetector2();
                 motionDetector = new BackgroundSubtractorDetector2(mSubtractorHistory,
                         mSubtractorThreshold, mShadowDetection, mediaStorageDir, mHSVproximity, mFtau);
                 break;

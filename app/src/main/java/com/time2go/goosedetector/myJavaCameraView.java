@@ -41,11 +41,16 @@ public class myJavaCameraView extends JavaCameraView {
     public void setMaxResolution() {
         Camera.Parameters params = mCamera.getParameters();
         List<Camera.Size> sizes = params.getSupportedPreviewSizes();
-        //be sure to set view layout to "match parent" or image wont be scaled to fit the screen.
         mMaxHeight = sizes.get(0).height;    //0 seems to be the highest resolution
         mMaxWidth = sizes.get(0).width;
+        List<Camera.Size> PictureSizes = params.getSupportedPictureSizes();
+        //be sure to set view layout to "match parent" or image wont be scaled to fit the screen.
+        //params.setPictureSize(PictureSizes.get(3).width, PictureSizes.get(3).height);
+        //params.setPictureSize(mMaxWidth, mMaxHeight);
         disconnectCamera();
-        connectCamera(mMaxWidth, mMaxHeight);
+        connectCamera(PictureSizes.get(0).width, PictureSizes.get(0).height);
+        //params.setPreviewSize(mMaxWidth, mMaxHeight);
+        //mCamera.setParameters(params);
     }
 
     public void takePicture(final String fileName) {

@@ -17,24 +17,6 @@
             android:entryValues="@array/entryvalues_detector"
             android:defaultValue="basic" />
 
-<!--        <PreferenceCategory android:title="MOG Subtractor Detector Settings">
-            <EditTextPreference
-                android:key="subtractorHistory"
-                android:inputType="number"
-                android:defaultValue="10"
-                android:title="Subtraction History"
-                android:summary="Default is 10"
-                android:dialogTitle="Subtraction History"/>
-
-           <EditTextPreference
-                android:key="subtractorBackgroundRatio"
-                android:inputType="number"
-                android:defaultValue="80"
-                android:title="Background Subtraction Detector Ratio"
-                android:summary="Default is 80"
-                android:dialogTitle="Background Subtraction Detector Ratio" />
-        </PreferenceCategory>-->
-
         <PreferenceScreen android:title="MOG2 Subtractor Detector Settings">
             <EditTextPreference
                 android:key="subtractorHistory"

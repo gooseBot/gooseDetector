@@ -1,13 +1,9 @@
 package com.time2go.goosedetector;
 
-import android.media.Image;
-import android.util.Log;
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.opencv.core.Core;
@@ -17,10 +13,10 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
-import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.video.BackgroundSubtractorMOG;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.video.BackgroundSubtractorMOG2;
+import org.opencv.video.Video;
 
 import static org.opencv.imgproc.Imgproc.boundingRect;
 import static org.opencv.imgproc.Imgproc.drawContours;
@@ -30,20 +26,15 @@ public final class BackgroundSubtractorDetector2 extends BaseDetector implements
     private static final double LEARNING_RATE = 0.1 ;
 
     private BackgroundSubtractorMOG2 bg;
-    //private Mat buf = new Mat();
-    //private Mat buf[] = new Mat[sunShadowHistory];
     private Mat buf[];
-    //private Mat buf[];
     private Mat fgMask = new Mat();
     private Mat sourceHSV = new Mat();
     private Mat sourceRGB = new Mat();
     private Mat myMask;
     private int sunShadowHistory=3;
-    //private Mat fgMask;
     private static final String TAG = "OCVSample::Activity";
-    private double mShadowDetect;
-    private double mFtau;
-    //private int indexOldest;
+    //private double mShadowDetect;
+    //private double mFtau;
     private int current;
     private File mMediaStorageDir;
     private int mHSVproximity=5;
@@ -52,32 +43,30 @@ public final class BackgroundSubtractorDetector2 extends BaseDetector implements
 
     public BackgroundSubtractorDetector2(int history, float threshold, double shadowDetect, File mediaDir, int HSVproximity, double fTau) {
         //To reduce noise artifacts, we increase varThreshold from the default 16 to 64
-        mShadowDetect=shadowDetect;
+        //mShadowDetect=shadowDetect;
         mMediaStorageDir=mediaDir;
         mHSVproximity=HSVproximity;
-        mFtau=fTau;
-        bg = new BackgroundSubtractorMOG2(history, threshold, true);
+        //mFtau=fTau;
+        //bg = new BackgroundSubtractorMOG2(history, threshold, true);
+        bg = Video.createBackgroundSubtractorMOG2();
+        bg.setDetectShadows(false);
         //bg = new BackgroundSubtractorMOG2();
         //bg.setInt("nmixtures", 3);
-        bg.setDouble("fTau",mFtau);
+        //bg.setDouble("fTau",mFtau);
         //bg.setInt("nShadowDetection", 40);
-        bg.setDouble("nShadowDetection", mShadowDetect);
+        //bg.setDouble("nShadowDetection", mShadowDetect);
 
         //mBgMog2.setInt("nmixtures" , 3);
         //bg.setDouble("fVarInit" , 80.0);
         //mBgMog2.setDouble("fTau" , 0.2);
         //bg.setDouble("fVarMin" , 200.0);
         //bg.setDouble("fVarMax" , 80.0);
-        bg.setBool("detectShadows", true);
+        //bg.setBool("detectShadows", true);
 
         buf = new Mat[sunShadowHistory];
         for (int i=0;i<sunShadowHistory;i++) {
             buf[i] = new Mat();
         }
-
-        Log.e(TAG,"nmixtures = " + bg.getInt("nmixtures"));
-        Log.e(TAG,"fTau = " + bg.getDouble("fTau"));
-        Log.e(TAG, "nShadowDetection = " + bg.getInt("nShadowDetection"));
     }
 
     public void saveFgMask(){
@@ -85,14 +74,15 @@ public final class BackgroundSubtractorDetector2 extends BaseDetector implements
         File mediaFile = new File(mMediaStorageDir.getPath() +
                 File.separator + "contour_" +
                 timeStamp + "_fgMask.png");
-        Highgui.imwrite(mediaFile.toString(), fgMask);
+        Imgcodecs.imwrite(mediaFile.toString(), fgMask);
     }
 
     @Override
     public Mat detect(Mat source) {
 
-        //Imgproc.cvtColor(source,sourceRGB,Imgproc.COLOR_RGBA2BGR);
-
+        //resize to equal preview size
+        //Size previewSize = new Size(1920,1080);
+        //Imgproc.resize(source, source, previewSize);
         current++;
         int indexCurrent = current % sunShadowHistory;
         int indexOldest = (current-(sunShadowHistory-1)) % sunShadowHistory;
@@ -101,7 +91,8 @@ public final class BackgroundSubtractorDetector2 extends BaseDetector implements
         sourceHSV.copyTo(buf[indexCurrent]);
 
         //bg.apply(sourceRGB, fgMask, LEARNING_RATE);
-        bg.apply(source, fgMask, LEARNING_RATE);
+        //bg.apply(source, fgMask, LEARNING_RATE);
+        bg.apply(source, fgMask);
         //save the file for debugging
 
         //Imgproc.threshold(fgMask, fgMask, 1, 255, Imgproc.THRESH_BINARY);

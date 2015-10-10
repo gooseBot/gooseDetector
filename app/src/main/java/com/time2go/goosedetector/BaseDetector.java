@@ -1,14 +1,7 @@
-// Decompiled by Jad v1.5.8e. Copyright 2001 Pavel Kouznetsov.
-// Jad home page: http://www.geocities.com/kpdus/jad.html
-// Decompiler options: braces fieldsfirst space lnc 
-
 package com.time2go.goosedetector;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
-
-// Referenced classes of package org.opencv.samples.colorblobdetect:
-//            IDetector
 
 public abstract class BaseDetector
     implements IDetector
